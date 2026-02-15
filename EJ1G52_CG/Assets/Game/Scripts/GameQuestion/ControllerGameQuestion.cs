@@ -10,6 +10,7 @@ public class ControllerGameQuestion : MonoBehaviour
     public TMP_Text textoPreguntas;
     public TMP_Text[] textoOpciones;
     public TMP_Text[] textoVF;
+    public TMP_Text textoDificultad;
     //public TextAsset archivoPreguntas;
 
     [Header("Paneles de Resultado")]
@@ -17,7 +18,12 @@ public class ControllerGameQuestion : MonoBehaviour
     public GameObject panelIncorrecto;
     public TMP_Text textoVersiculo;
 
-    private List<MultipleQuestion> listaPreguntas = new List<MultipleQuestion>();
+    private List<MultipleQuestion> listaPreguntasF = new List<MultipleQuestion>();
+    private List<MultipleQuestion> listaPreguntasD = new List<MultipleQuestion>();
+    private List<FVQuestions> PreguntasFVF = new List<FVQuestions>();
+    private List<FVQuestions> PreguntasFVD = new List<FVQuestions>();
+    //private List<AbiertasQuestion> listasAbiertasF = new List<AbiertasQuestion>(); cuando ya se cree la clase de preguntas abiertas, se puede agregar esta lista para almacenar las preguntas abiertas del archivo
+    //private List<AbiertasQuestion> listasAbiertasD = new List<AbiertasQuestion>();
     private int indiceActual = 0;
 
     void Start()
@@ -54,7 +60,7 @@ public class ControllerGameQuestion : MonoBehaviour
                             datos[0], datos[1], datos[2], datos[3],
                             datos[4], datos[5], datos[6], datos[7]
                         );
-                        listaPreguntas.Add(nuevaP);
+                        listaPreguntasF.Add(nuevaP);
                     }
                 }
             }
@@ -67,18 +73,19 @@ public class ControllerGameQuestion : MonoBehaviour
         // 2. Activamos el panel cuando se selecciona una pregunta
         if (panelPreguntaCompleto != null) panelPreguntaCompleto.SetActive(true);
 
-        textoPreguntas.text = listaPreguntas[indice].Question;
-        textoOpciones[0].text = listaPreguntas[indice].Option1;
-        textoOpciones[1].text = listaPreguntas[indice].Option2;
-        textoOpciones[2].text = listaPreguntas[indice].Option3;
-        textoOpciones[3].text = listaPreguntas[indice].Option4;
+        textoPreguntas.text = listaPreguntasF[indice].Question;
+        textoOpciones[0].text = listaPreguntasF[indice].Option1;
+        textoOpciones[1].text = listaPreguntasF[indice].Option2;
+        textoOpciones[2].text = listaPreguntasF[indice].Option3;
+        textoOpciones[3].text = listaPreguntasF[indice].Option4;
+        textoDificultad.text = "Dificultad: " + listaPreguntasF[indice].Dificulty;
 
         CerrarPaneles();
     }
 
     public void SiguientePreguntaAzar()
     {
-        int azar = Random.Range(0, listaPreguntas.Count);
+        int azar = Random.Range(0, listaPreguntasF.Count);
         MostrarPregunta(azar);
     }
 
@@ -86,7 +93,7 @@ public class ControllerGameQuestion : MonoBehaviour
     {
         // Obtenemos los textos
         string resJugador = textoOpciones[botonIndice].text;
-        string resCorrecta = listaPreguntas[indiceActual].Answer;
+        string resCorrecta = listaPreguntasF[indiceActual].Answer;
 
         // IMPRIMIMOS CON FLECHAS PARA VER ESPACIOS
         Debug.Log("JUGADOR: >" + resJugador + "<");
@@ -96,7 +103,7 @@ public class ControllerGameQuestion : MonoBehaviour
         if (resJugador.Trim().ToLower() == resCorrecta.Trim().ToLower())
         {
             panelCorrecto.SetActive(true);
-            textoVersiculo.text = "¡Correcto! " + listaPreguntas[indiceActual].Versiculo;
+            textoVersiculo.text = "¡Correcto! " + listaPreguntasF[indiceActual].Versiculo;
         }
         else
         {
