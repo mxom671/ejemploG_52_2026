@@ -9,8 +9,7 @@ public class FVQuestions
     private string versiculo;
     private string dificultad;
 
-    public FVQuestions()
-    {
+    public FVQuestions(){
     }
 
     public FVQuestions(string pregunta, bool respuesta, string versiculo, string diificultad)
