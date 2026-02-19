@@ -224,31 +224,97 @@ public class ControllerGameQuestion : MonoBehaviour
         CerrarPaneles();
     }
 
-    public void SiguientePreguntaAzar()
+    public void SiguientePreguntaAzar(bool Facil)
     {
-        int azar = Random.Range(0, listaPreguntasF.Count);
-        //MostrarPreguntaMultiple(azar);
+        int tipo = Random.Range(0, 3);
+        switch (tipo)
+        {
+            case 0:
+                if (Facil && listaPreguntasF.Count > 0)
+                {
+                    int azar = Random.Range(0, listaPreguntasF.Count);
+                    MostrarPreguntaMultiple(azar,true);
+                }
+               else if (!Facil && listaPreguntasD.Count > 0)
+                {
+                    int azar = Random.Range(0, listaPreguntasD.Count);
+                    MostrarPreguntaMultiple(azar,false);
+                }
+                break;
+
+            case 1:
+                if (Facil && PreguntasFVF.Count > 0)
+                {
+                    int azar = Random.Range(0, PreguntasFVF.Count);
+                    MostrarPreguntaVF(azar, true);
+                }
+                else if (!Facil && PreguntasFVD.Count > 0)
+                {
+                    int azar = Random.Range(0, PreguntasFVD.Count);
+                   MostrarPreguntaVF(azar, false);
+                }
+                break;
+            case 2:
+                if (Facil && listasAbiertasF.Count > 0)
+                {
+                    int azar = Random.Range(0, listasAbiertasF.Count);
+                    MostrarPreguntaAbierta(azar, true);
+                }
+                else if (!Facil && listasAbiertasD.Count > 0)
+                {
+                    int azar = Random.Range(0, listasAbiertasD.Count);
+                    MostrarPreguntaAbierta(azar, false);
+                }
+                break;
+        }
     }
 
     public void ComprobarRespuesta(int botonIndice)
     {
-        // Obtenemos los textos
-        string resJugador = textoOpciones[botonIndice].text;
-        string resCorrecta = listaPreguntasF[indiceActual].Answer;
-
-        // IMPRIMIMOS CON FLECHAS PARA VER ESPACIOS
-        Debug.Log("JUGADOR: >" + resJugador + "<");
-        Debug.Log("CORRECTA: >" + resCorrecta + "<");
-
-        // Limpieza total para la comparación
-        if (resJugador.Trim().ToLower() == resCorrecta.Trim().ToLower())
+        if (tipoPregunta == "Multiple")
         {
-            panelCorrecto.SetActive(true);
-            textoVersiculo.text = "¡Correcto! " + listaPreguntasF[indiceActual].Versiculo;
+            MultipleQuestion preguntaM = PreguntaFacil
+                ? listaPreguntasF[indiceActual]
+                : listaPreguntasD[indiceActual];
+
+            // Obtenemos los textos
+            string resJugador = textoOpciones[botonIndice].text;
+            string resCorrecta = preguntaM.Answer;
+
+            // IMPRIMIMOS CON FLECHAS PARA VER ESPACIOS
+            Debug.Log("JUGADOR: >" + resJugador + "<");
+            Debug.Log("CORRECTA: >" + resCorrecta + "<");
+
+            // Limpieza total para la comparación
+            if (resJugador.Trim().ToLower() == resCorrecta.Trim().ToLower())
+            {
+                panelCorrecto.SetActive(true);
+                textoVersiculo.text = "¡Correcto! " + preguntaM.Versiculo;
+            }
+            else
+            {
+                panelIncorrecto.SetActive(true);
+            }
+
         }
-        else
+        else if (tipoPregunta == "VF")
         {
-            panelIncorrecto.SetActive(true);
+            FVQuestions preguntaM = PreguntaFacil
+                ? PreguntasFVF[indiceActual]
+                : PreguntasFVD[indiceActual];
+
+            bool respuestaJugador = botonIndice == 0; // Verdadero es el índice 0
+            
+            if (respuestaJugador == preguntaM.Respuesta)
+            {
+                panelCorrecto.SetActive(true);
+                textoVersiculo.text = "¡Correcto! " + preguntaM.Versiculo;
+            }
+            else
+            {
+                panelIncorrecto.SetActive(true);
+            }
+
         }
     }
 
