@@ -14,6 +14,9 @@ public class ControllerGameQuestion : MonoBehaviour
     public TMP_Text textoDificultad;
     public TMP_Text textoRespuesta;
     public TMP_InputField inputRespuestaAbierta;
+    public TextMeshProUGUI textoPuntos;
+    public GameObject panelResultados;
+    public TextMeshProUGUI puntajeFinal;
 
     [Header("Navegación de Paneles")]
     public GameObject panelBienvenida; // El que tiene el botón Start
@@ -26,6 +29,7 @@ public class ControllerGameQuestion : MonoBehaviour
     [Header("Progreso del Juego")]
     public int puntosActuales = 0;
     public int puntosParaNivelDificil = 20;
+    public int puntajeParaGanar = 50;
 
     [Header("Paneles de Resultado")]
     public GameObject panelCorrecto;
@@ -42,12 +46,19 @@ public class ControllerGameQuestion : MonoBehaviour
     private bool PreguntaFacil;
     private string tipoPregunta;
     private int indiceActual = 0;
+    private bool nivelActualEsFacil;
+    private bool esPrimeraPregunta = true;
+    private int intentosActuales = 0;
+    private int maxIntentos = 2;
+    public int puntosPorAcierto = 5;
+    public int puntosPorError = -2;
 
     void Start()
     {
         ReadCreateListQuestion();
         ReadCreateListFVQuestion();
         ReadCreateListAbiertaQuestion();
+        ActualizarTextoPuntos();
 
         // Inicialización de UI
         if (panelPreguntaCompleto != null) panelPreguntaCompleto.SetActive(false);
@@ -58,30 +69,43 @@ public class ControllerGameQuestion : MonoBehaviour
     // Función principal para los botones de "Siguiente" o "Jugar"
     public void SeleccionarPreguntaPorNivel()
     {
-        // 1. Escondemos el menú de inicio
-        if (panelBienvenida != null) panelBienvenida.SetActive(false);
+        if (panelBienvenida != null)
+            panelBienvenida.SetActive(false);
 
         CerrarPaneles();
-        if (inputRespuestaAbierta != null) inputRespuestaAbierta.text = " ";
 
-        // 2. Decidimos el nivel según los puntos
         bool esFacil = puntosActuales < puntosParaNivelDificil;
 
-        // 3. Mostramos el anuncio de nivel antes de la pregunta (Opcional pero recomendado)
-        if (panelAnuncioNivel != null)
+        // Solo mostrar anuncio si:
+        // - Es la primera pregunta
+        // - O cambió el nivel
+        if (esPrimeraPregunta || esFacil != nivelActualEsFacil)
         {
+            esPrimeraPregunta = false;
+            nivelActualEsFacil = esFacil;
+
             panelAnuncioNivel.SetActive(true);
             textoAnuncioNivel.text = esFacil ? "Nivel 1: Fácil" : "Nivel 2: Difícil";
 
-            // Usamos Invoke para que el anuncio se quite solo tras 2 segundos y salga la pregunta
-            Invoke(esFacil ? "LanzarFacil" : "LanzarDificil", 2f);
+            Invoke(nameof(OcultarAnuncioYLanzarPregunta), 2f);
         }
         else
         {
-            // Si no tienes panel de anuncio, lanza la pregunta de una vez
             SiguientePreguntaAzar(esFacil);
         }
     }
+
+    void ActualizarTextoPuntos()
+    {
+        textoPuntos.text = "Puntos: " + puntosActuales;
+    }
+
+    void OcultarAnuncioYLanzarPregunta()
+    {
+        panelAnuncioNivel.SetActive(false);
+        SiguientePreguntaAzar(nivelActualEsFacil);
+    }
+
 
     // Funciones auxiliares para el Invoke
     void LanzarFacil() { panelAnuncioNivel.SetActive(false); SiguientePreguntaAzar(true); }
@@ -153,6 +177,7 @@ public class ControllerGameQuestion : MonoBehaviour
     #region Visualización de Preguntas
     public void MostrarPreguntaMultiple(int indice, bool Facil)
     {
+        intentosActuales = 0;
         tipoPregunta = "Multiple";
         PreguntaFacil = Facil;
         indiceActual = indice;
@@ -176,6 +201,7 @@ public class ControllerGameQuestion : MonoBehaviour
 
     public void MostrarPreguntaVF(int indice, bool Facil)
     {
+        intentosActuales = 0;
         tipoPregunta = "VF";
         PreguntaFacil = Facil;
         indiceActual = indice;
@@ -194,6 +220,7 @@ public class ControllerGameQuestion : MonoBehaviour
 
     public void MostrarPreguntaAbierta(int indice, bool Facil)
     {
+        intentosActuales = 0;
         tipoPregunta = "Abierta";
         PreguntaFacil = Facil;
         indiceActual = indice;
@@ -280,14 +307,66 @@ public class ControllerGameQuestion : MonoBehaviour
 
         if (esCorrecto)
         {
-            puntosActuales += 5;
+            puntosActuales += puntosPorAcierto;
+            ActualizarTextoPuntos();
+
             panelCorrecto.SetActive(true);
+
+            intentosActuales = 0;
+
+            VerificarFinDelJuego();
             textoVersiculo.text = "¡Correcto! " + versiculo;
         }
         else
         {
-            panelIncorrecto.SetActive(true);
+            intentosActuales++;
+
+            // Restar puntos por error
+            puntosActuales += puntosPorError;
+
+            // Evitar que baje de 0 (opcional)
+            if (puntosActuales < 0)
+                puntosActuales = 0;
+
+            ActualizarTextoPuntos();
+
+            if (intentosActuales >= maxIntentos)
+            {
+                panelIncorrecto.SetActive(true);
+
+                Invoke(nameof(IrSiguientePregunta), 2f);
+            }
+            else
+            {
+                panelIncorrecto.SetActive(true);
+            }
         }
+
+        ActualizarTextoPuntos();
+        VerificarFinDelJuego();
+    }
+
+    void IrSiguientePregunta()
+    {
+        panelIncorrecto.SetActive(false);
+        panelCorrecto.SetActive(false);
+
+        SeleccionarPreguntaPorNivel();
+    }
+
+    void VerificarFinDelJuego()
+    {
+        if (puntosActuales >= puntajeParaGanar)
+        {
+            TerminarJuego();
+        }
+    }
+    void TerminarJuego()
+    {
+        CerrarPaneles();
+
+        panelResultados.SetActive(true);
+        puntajeFinal.text = "Puntaje Final: " + puntosActuales;
     }
 
     public void CerrarPaneles()
