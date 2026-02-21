@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using System.IO;
 using TMPro;
 using UnityEngine;
+using static UnityEngine.Rendering.DebugUI;
 
 public class ControllerGameQuestion : MonoBehaviour
 {
@@ -18,6 +19,9 @@ public class ControllerGameQuestion : MonoBehaviour
     public GameObject panelBienvenida; // El que tiene el botón Start
     public GameObject panelAnuncioNivel; // Un panel que diga "Nivel 1 - Fácil"
     public TMP_Text textoAnuncioNivel; // El texto dentro de ese panel
+    public GameObject panelMultiple;
+    public GameObject panelVF;
+    public GameObject panelAbierta;
 
     [Header("Progreso del Juego")]
     public int puntosActuales = 0;
@@ -58,7 +62,7 @@ public class ControllerGameQuestion : MonoBehaviour
         if (panelBienvenida != null) panelBienvenida.SetActive(false);
 
         CerrarPaneles();
-        if (inputRespuestaAbierta != null) inputRespuestaAbierta.text = "";
+        if (inputRespuestaAbierta != null) inputRespuestaAbierta.text = " ";
 
         // 2. Decidimos el nivel según los puntos
         bool esFacil = puntosActuales < puntosParaNivelDificil;
@@ -152,6 +156,10 @@ public class ControllerGameQuestion : MonoBehaviour
         tipoPregunta = "Multiple";
         PreguntaFacil = Facil;
         indiceActual = indice;
+
+        panelMultiple.SetActive(true);
+        panelVF.SetActive(false);
+        panelAbierta.SetActive(false);
         panelPreguntaCompleto.SetActive(true);
 
         MultipleQuestion p = Facil ? listaPreguntasF[indice] : listaPreguntasD[indice];
@@ -160,7 +168,7 @@ public class ControllerGameQuestion : MonoBehaviour
         textoOpciones[1].text = p.Option2;
         textoOpciones[2].text = p.Option3;
         textoOpciones[3].text = p.Option4;
-        textoDificultad.text = "Dificultad: " + p.Dificulty;
+        //textoDificultad.text = "Dificultad: " + p.Dificulty;
 
         // Desactivamos el input de abiertas por si acaso
         inputRespuestaAbierta.gameObject.SetActive(false);
@@ -171,14 +179,17 @@ public class ControllerGameQuestion : MonoBehaviour
         tipoPregunta = "VF";
         PreguntaFacil = Facil;
         indiceActual = indice;
+        panelMultiple.SetActive(false);
+        panelVF.SetActive(true);
+        panelAbierta.SetActive(false);
         panelPreguntaCompleto.SetActive(true);
 
         FVQuestions p = Facil ? PreguntasFVF[indice] : PreguntasFVD[indice];
         textoPreguntas.text = p.Pregunta;
         textoVF[0].text = "Verdadero";
         textoVF[1].text = "Falso";
-        textoDificultad.text = "Dificultad: " + p.Dificultad;
-        inputRespuestaAbierta.gameObject.SetActive(false);
+        //textoDificultad.text = "Dificultad: " + p.Dificultad;
+       // inputRespuestaAbierta.gameObject.SetActive(false);
     }
 
     public void MostrarPreguntaAbierta(int indice, bool Facil)
@@ -186,11 +197,15 @@ public class ControllerGameQuestion : MonoBehaviour
         tipoPregunta = "Abierta";
         PreguntaFacil = Facil;
         indiceActual = indice;
+        panelMultiple.SetActive(false);
+        panelVF.SetActive(false);
+        panelAbierta.SetActive(true);
+
         panelPreguntaCompleto.SetActive(true);
 
         QuestionAbierta p = Facil ? listasAbiertasF[indice] : listasAbiertasD[indice];
         textoPreguntas.text = p.Pregunta;
-        textoDificultad.text = "Dificultad: " + p.Dificultad;
+        //textoDificultad.text = "Dificultad: " + p.Dificultad;
 
         if (textoRespuesta != null)
         {
